@@ -9,7 +9,9 @@ import (
 	"log"
 	"math"
 )
-const targetBits = 24
+
+const targetBits = 16
+
 var (
 	maxNonce = math.MaxInt64
 )
@@ -38,8 +40,6 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 	return pow
 }
 
-
-
 func (pow *ProofOfWork) prepareData(nonce int) []byte {
 	data := bytes.Join(
 		[][]byte{
@@ -54,7 +54,6 @@ func (pow *ProofOfWork) prepareData(nonce int) []byte {
 
 	return data
 }
-
 
 func (pow *ProofOfWork) Run() (int, []byte) {
 	var hashInt big.Int
@@ -77,4 +76,16 @@ func (pow *ProofOfWork) Run() (int, []byte) {
 	fmt.Print("\n\n")
 
 	return nonce, hash[:]
+}
+
+func (pow *ProofOfWork) Validate() bool {
+	var hashInt big.Int
+
+	data := pow.prepareData(pow.block.Nonce)
+	hash := sha256.Sum256(data)
+	hashInt.SetBytes(hash[:])
+
+	isValid := hashInt.Cmp(pow.target) == -1
+
+	return isValid
 }
